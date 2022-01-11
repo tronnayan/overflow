@@ -8,8 +8,8 @@ from django.contrib.auth.password_validation import validate_password
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all(), message  = "Email already registered.")])
+    
     class Meta:
-        
         model = User
         fields = ('username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
