@@ -6,6 +6,8 @@ from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
+from .models import Question, Tag
+
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all(), message  = "Email already registered.")])
     
@@ -27,3 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
         fields = ('username', 'email')
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ('user','title','question','tags')
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag 
+        fields = ('user','tag_name','updatedat')
