@@ -5,5 +5,7 @@ urlpatterns = [
      path('register',RegisterView.as_view()),
      path('user',UserView.as_view()),
      path('question',QuestionView.as_view()),
+     path('answer',AnswerView.as_view()),
      path('tag',TagView.as_view()),
+     path('reply',ReplyView.as_view())
 ]

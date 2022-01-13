@@ -14,7 +14,7 @@ class extUser(models.Model):
 
 class Tag(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tag_name = models.CharField(max_length=50, blank=True)
+    tag_name = models.CharField(max_length=50, unique=True, blank=True)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
 
@@ -22,7 +22,8 @@ class Question(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     title = models.TextField(blank=True)
     question = models.TextField(blank=True)
-    tags = models.ForeignKey(Tag,on_delete=models.CASCADE)
+    # attachments = models.FileField(upload_to='question_attachments/', null=True)
+    tags = models.ManyToManyField(Tag, blank=True)
     vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
@@ -37,15 +38,20 @@ class VoteAnswer(models.Model):
 
 class Answers(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answers")
     answer = TextField()
-    attachments= models.FileField(upload_to='answer_attachments/', null=True)
-    reply = models.ForeignKey("self",on_delete=models.CASCADE)
+    # attachments= models.FileField(upload_to='answer_attachments/', null=True)
+    # reply = models.ForeignKey("self",on_delete=models.CASCADE)
     vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
 
-
+class Reply(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    reply = models.TextField()
+    answer = models.ForeignKey(Answers,on_delete=models.CASCADE, related_name="replies")
+    createdat = models.DateTimeField(auto_now=True,null=True)
+    updatedat = models.DateTimeField(auto_now=False,null=True)
 
 
 

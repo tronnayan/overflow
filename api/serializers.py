@@ -1,3 +1,4 @@
+from asyncore import read
 from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -6,14 +7,14 @@ from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-from .models import Question, Tag
+from .models import Answers, Question, Reply, Tag
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all(), message  = "Email already registered.")])
     
     class Meta:
         model = User
-        fields = ('username', 'email', 'password')
+        fields = ('id','username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -28,14 +29,29 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
-        fields = ('username', 'email')
+        fields = ('id','username', 'email')
 
-class QuestionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = ('user','title','question','tags')
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag 
-        fields = ('user','tag_name','updatedat')
+        fields = ('id','user','updatedat','tag_name')
+
+class ReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reply
+        fields = ('id','user','reply','answer','createdat','updatedat')
+
+class AnswerSerializer(serializers.ModelSerializer):
+    replies = ReplySerializer(read_only = True, many = True)
+    class Meta:
+        model = Answers
+        fields = ('id','user','question','answer','createdat','updatedat','replies')
+
+class QuestionSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(read_only = True, many = True)
+    answers = AnswerSerializer(read_only = True, many = True)
+    class Meta:
+        model = Question
+        fields = ('id','user','title','question','tags','createdat','updatedat','answers')
+    
