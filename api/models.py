@@ -22,29 +22,30 @@ class Question(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     title = models.TextField(blank=True)
     question = models.TextField(blank=True)
-    # attachments = models.FileField(upload_to='question_attachments/', null=True)
-    tags = models.ManyToManyField(Tag, blank=True)
+    attachments = models.FileField(null=True)
+    tags = models.ManyToManyField(Tag, blank=True,related_name = "questions")
     vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
     
 class VoteQuestion(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-
-class VoteAnswer(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE,  related_name="ques_votes")
 
 class Answers(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answers")
     answer = TextField()
-    # attachments= models.FileField(upload_to='answer_attachments/', null=True)
-    # reply = models.ForeignKey("self",on_delete=models.CASCADE)
+    attachments= models.FileField(null=True)
     vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
+
+
+class VoteAnswer(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answers, on_delete=models.CASCADE, null=True, related_name="ans_votes")
+
 
 class Reply(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

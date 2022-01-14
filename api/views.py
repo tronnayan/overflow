@@ -1,11 +1,12 @@
+from django.http import request
 from django.shortcuts import render
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
-
-from api.models import Question, Tag
-from .serializers import AnswerSerializer, QuestionSerializer, RegisterSerializer, ReplySerializer, TagSerializer, UserSerializer
+from django.db.models import Q
+from api.models import Answers, Question, Tag, VoteAnswer, VoteQuestion
+from .serializers import AnswerSerializer, QuestionSerializer, RegisterSerializer, ReplySerializer, TagSerializer, UserSerializer, VoteAnswerSerializer, VoteQuestionSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -40,29 +41,15 @@ class QuestionView(APIView):
     def get(self, request):
         questions = Question.objects.filter(user = request.user)
         serializer = QuestionSerializer(questions, many = True)
-        # for i in serializer.data:
-        #     if len(i['tags']) > 0:
-        #         tags = i['tags']
-        #         # for j in range(len(tags)):
-        #             # tags[j] = Tag.objects.all()
-        #         print(tags)
-                # s = TagSerializer(tags, many = True)
-                # i['tags'] = s.data
-
         return Response(serializer.data)
 
     def post(self, request):
         user = User.objects.get(id = request.user.id)
         dt = datetime.datetime.now()
-
-        data = {
-            "user" : user.id,
-            "title" : request.data.get("title"),
-            "tags" : request.data.get("tags"),
-            "question" : request.data.get("question"),
-            "updatedat" : dt
-        }
-        serializer = QuestionSerializer(data = data)
+        res = request.data 
+        res['user'] = user.id
+        res['updatedat'] = dt
+        serializer = QuestionSerializer(data = res)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -75,13 +62,10 @@ class AnswerView(APIView):
     def post(self, request):
         user = User.objects.get(id = request.user.id)
         dt = datetime.datetime.now()
-        data = {
-            "user" : user.id,
-            "question" : request.data.get("question"),
-            "answer" : request.data.get("answer"),
-            "updatedat" : dt
-        }
-        serializer = AnswerSerializer(data = data) 
+        res = request.data 
+        res['user'] = user.id
+        res['updatedat'] = dt
+        serializer = AnswerSerializer(data = res) 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -126,3 +110,71 @@ class ReplyView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
+
+class VoteQuestionView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        user = User.objects.get(id = request.user.id)
+        data = {
+            "user" : user.id,
+            "question" : request.data.get("question")
+        } 
+        serializer = VoteQuestionSerializer(data = data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+    def delete(self, request):
+        user = User.objects.get(id = request.user.id)
+        vote_obj = VoteQuestion.objects.get(Q(user = user) & Q(question_id = request.data.get("question"))).delete()
+        return Response({"Down voted for Question"})
+
+
+class VoteAnswerView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        user = User.objects.get(id = request.user.id)
+        data = {
+            "user" : user.id,
+            "answer" : request.data.get("answer")
+        } 
+        serializer = VoteAnswerSerializer(data = data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+    def delete(self, request):
+        user = User.objects.get(id = request.user.id)
+        vote_obj = VoteAnswer.objects.get(Q(user = user) & Q(answer_id = request.data.get("answer"))).delete()
+        return Response({"Down voted for an Answer"})
+
+class TagSearchView(APIView):
+    def get(self, request):
+        obj = Tag.objects.filter(tag_name__icontains = request.data.get("query"))
+        serializer = TagSerializer(obj,many = True)
+        return Response(serializer.data)
+
+class QuestionSearchByTagView(APIView):
+    def get(self,request,tag_id):
+        tag = Tag.objects.get(id = tag_id)
+        questions = tag.questions.all()
+        serializer = QuestionSerializer(questions,many = True)
+        return Response(serializer.data)
+
+class SearchQuestionView(APIView):
+    def get (self, request):
+        text = request.data.get("query")
+        questions = Question.objects.filter(Q(question__icontains = text) | Q(title__icontains = text))
+        serializer = QuestionSerializer(questions, many = True)
+        return Response(serializer.data)
+
+class SearchAnswerView(APIView):
+    def get (self, request):
+        text = request.data.get("query")
+        answers = Answers.objects.filter(answer__icontains = text)
+        serializer = AnswerSerializer(answers, many = True)
+        return Response(serializer.data)
