@@ -7,8 +7,9 @@ from django.db.models.fields.files import FileField
 
 # Create your models here.
 class extUser(models.Model):  
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE, related_name="extuser")
     bio = models.TextField(blank = True)
+    profile_img = models.ImageField(null = True, blank = True)
     def __str__(self):
         return self.user.username
 
@@ -24,7 +25,6 @@ class Question(models.Model):
     question = models.TextField(blank=True)
     attachments = models.FileField(null=True)
     tags = models.ManyToManyField(Tag, blank=True,related_name = "questions")
-    vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
     
@@ -37,7 +37,6 @@ class Answers(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answers")
     answer = TextField()
     attachments= models.FileField(null=True)
-    vote_count = models.IntegerField(default = 0)
     createdat = models.DateTimeField(auto_now=True,null=True)
     updatedat = models.DateTimeField(auto_now=False,null=True)
 

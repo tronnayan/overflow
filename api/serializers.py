@@ -1,4 +1,5 @@
 from asyncore import read
+from dataclasses import field
 from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -7,7 +8,7 @@ from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-from .models import Answers, Question, Reply, Tag, VoteAnswer, VoteQuestion
+from .models import Answers, Question, Reply, Tag, VoteAnswer, VoteQuestion, extUser
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all(), message  = "Email already registered.")])
@@ -29,7 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
         fields = ('id','username', 'email')
-
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

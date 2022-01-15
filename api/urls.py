@@ -3,6 +3,7 @@ from api.models import VoteQuestion
 from api.views import *
 
 urlpatterns = [
+     path('',DashboardView.as_view()),
      path('register',RegisterView.as_view()),
      path('user',UserView.as_view()),
      path('question',QuestionView.as_view()),

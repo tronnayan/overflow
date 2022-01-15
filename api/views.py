@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.http import request
 from django.shortcuts import render
 from rest_framework import generics
@@ -13,6 +14,13 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 import datetime
 # Create your views here.
+
+class DashboardView(APIView):
+    def get(self, request):
+        questions = Question.objects.annotate(votes = Count('ques_votes'))
+        serializer = QuestionSerializer(questions.order_by('votes').reverse()[:5], many = True)
+        return Response(serializer.data)
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -39,7 +47,7 @@ class QuestionView(APIView):
     permission_classes = (IsAuthenticated,)
     
     def get(self, request):
-        questions = Question.objects.filter(user = request.user)
+        questions = Question.objects.all()
         serializer = QuestionSerializer(questions, many = True)
         return Response(serializer.data)
 
@@ -54,7 +62,6 @@ class QuestionView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
-
 
 class AnswerView(APIView):
     permission_classes = (IsAuthenticated, )
