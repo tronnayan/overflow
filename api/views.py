@@ -123,6 +123,8 @@ class VoteQuestionView(APIView):
 
     def post(self, request):
         user = User.objects.get(id = request.user.id)
+        if VoteQuestion.objects.filter(Q(user = user) & Q(question_id = request.data.get("question"))).exists():
+            return Response("You have voted for this Question")
         data = {
             "user" : user.id,
             "question" : request.data.get("question")
@@ -144,6 +146,8 @@ class VoteAnswerView(APIView):
 
     def post(self, request):
         user = User.objects.get(id = request.user.id)
+        if VoteAnswer.objects.filter(Q(user = user) & Q(answer_id = request.data.get("answer"))).exists():
+            return Response("You have voted for this Answer")
         data = {
             "user" : user.id,
             "answer" : request.data.get("answer")
